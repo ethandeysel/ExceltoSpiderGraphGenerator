@@ -1,6 +1,7 @@
 import streamlit as st
 from src.engine import process_wheel_data
 from src.visualizations import create_control_wheel
+import io
 
 st.set_page_config(page_title="Control Wheel Dashboard", layout="wide")
 st.title("Security Control Status Wheels")
@@ -22,6 +23,17 @@ if uploaded_file:
         
         # Display in Streamlit
         st.plotly_chart(fig, use_container_width=True)
+        html_buffer = io.StringIO()
+        fig.write_html(html_buffer, include_plotlyjs='cdn')
+        html_bytes = html_buffer.getvalue().encode()
+
+        # 2. Add the download button to the sidebar or main page
+        st.sidebar.download_button(
+            label=f"Download Interactive {selected_group} Wheel",
+            data=html_bytes,
+            file_name=f"Control_Wheel_{selected_group}.html",
+            mime="text/html"
+        )
         
         with st.expander("View Raw Data for this Group"):
             st.dataframe(group_df[['Variable', 'Control_Name', 'Status', 'Score/5']])
